@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語クイズ・チャレンジ！</title>
+    <!-- 楽しい雰囲気を出すためのGoogleフォント -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4facfe;
+            --secondary-color: #00f2fe;
+            --accent-color: #ff9a9e;
+            --correct-color: #43e97b;
+            --wrong-color: #ff6b6b;
+            --text-color: #444;
+            --bg-color: #e0f7fa;
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* ヘッダー周り */
+        h1 {
+            color: #007bb5;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 15px 0;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-number {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        /* 問題文エリア */
+        .question-box {
+            background-color: #f0f9ff;
+            border: 3px solid #b3e5fc;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .question-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0277bd;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        /* スピーカーボタン */
+        .speak-btn {
+            background-color: #fff;
+            border: 2px solid #4facfe;
+            color: #4facfe;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .speak-btn:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.05);
+        }
+
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+
+        .question-jp {
+            font-size: 16px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 選択肢ボタン */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 20px;
+            font-family: inherit;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            outline: none;
+        }
+
+        .option-btn:hover {
+            background-color: #f9f9f9;
+            border-color: #bbb;
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 正解・不正解のスタイル */
+        .option-btn.correct {
+            background-color: #e6fffa;
+            border-color: var(--correct-color);
+            color: #00695c;
+            font-weight: bold;
+        }
+
+        .option-btn.correct::after {
+            content: "〇";
+            position: absolute;
+            right: 20px;
+            color: var(--correct-color);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #fff5f5;
+            border-color: var(--wrong-color);
+            color: #c62828;
+            opacity: 0.7;
+        }
+
+        .option-btn.wrong::after {
+            content: "✕";
+            position: absolute;
+            right: 20px;
+            color: var(--wrong-color);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 解説エリア */
+        .feedback-area {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .feedback-correct {
+            background-color: #e6fffa;
+            border: 2px solid var(--correct-color);
+        }
+
+        .feedback-wrong {
+            background-color: #fff5f5;
+            border: 2px solid var(--wrong-color);
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+        }
+
+        .feedback-text {
+            font-size: 16px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .keyword {
+            color: #d81b60;
+            font-weight: bold;
+            background-color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
+        }
+
+        /* 次へボタン */
+        .next-btn {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+            transition: transform 0.2s;
+            display: none; /* 最初は隠す */
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* スタート画面・結果画面 */
+        .overlay-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        #start-screen {
+            display: flex;
+        }
+        
+        #quiz-screen {
+            display: none;
+        }
+
+        #result-screen {
+            display: none;
+        }
+
+        .score-display {
+            font-size: 60px;
+            color: var(--primary-color);
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 2px 2px 0px #eee;
+        }
+
+        .result-message {
+            font-size: 22px;
+            margin-bottom: 30px;
+            color: #555;
+        }
+
+        .action-btn {
+            background: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 166, 255, 0.4);
+            transition: transform 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* スマホ調整 */
+        @media (max-width: 400px) {
+            .question-text { font-size: 24px; }
+            .option-btn { font-size: 18px; padding: 12px; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- スタート画面 -->
+    <div id="start-screen" class="overlay-screen">
+        <h1>えいご チャレンジ！</h1>
+        <div style="font-size: 60px; margin: 20px;">🎓</div>
+        <p style="font-size: 18px; margin-bottom: 30px;">
+            もんだいがでたら、えいごをよみあげるよ。<br>
+            おとを きいて こたえてね！
+        </p>
+        <button class="action-btn" onclick="startQuiz()">スタート！</button>
+    </div>
+
+    <!-- クイズ画面 -->
+    <div id="quiz-screen">
+        <h1>えいご チャレンジ！</h1>
+        
+        <div class="question-number">だい <span id="q-num">1</span> もん</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="question-box">
+            <button class="speak-btn" onclick="speakCurrentQuestion()">
+                🔊 もういちど きく
+            </button>
+            <div class="question-text" id="question-text">Are you ready?</div>
+            <div class="question-jp" id="question-jp">じゅんびは いいかな？</div>
+        </div>
+
+        <div class="options-grid" id="options-area">
+            <!-- 選択肢ボタンがここに入ります -->
+        </div>
+
+        <div class="feedback-area" id="feedback-area">
+            <div class="feedback-title" id="feedback-title"></div>
+            <div class="feedback-text" id="feedback-detail"></div>
+        </div>
+
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">つぎへ すすむ ➡</button>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-screen" class="overlay-screen">
+        <h1 style="font-size: 32px; color: #ff9a9e;">テスト しゅうりょう！</h1>
+        <div>あなたの てんすうは...</div>
+        <div class="score-display"><span id="final-score">0</span> / 10</div>
+        <div class="result-message" id="result-message">がんばったね！</div>
+        <button class="action-btn" onclick="location.reload()">もういちど やる！</button>
+    </div>
+</div>
+
+<script>
+    // 問題データ
+    const questions = [
+        {
+            q: "Are you a student?",
+            jp: "あなたは せいと ですか？",
+            a: ["Yes, I am.", "Yes, I do.", "Yes, it is."],
+            correct: 0,
+            explain: "「<span class='keyword'>Are you</span>...?」ときかれたら、「<span class='keyword'>Yes, I am.</span>」とこたえるよ。"
+        },
+        {
+            q: "Do you like tennis?",
+            jp: "テニスは すき？",
+            a: ["Yes, I am.", "Yes, I do.", "Yes, he does."],
+            correct: 1,
+            explain: "「<span class='keyword'>Do you</span>...?」ときかれたら、「<span class='keyword'>Yes, I do.</span>」とこたえるよ。"
+        },
+        {
+            q: "Is he your teacher?",
+            jp: "かれは あなたのせんせい？",
+            a: ["Yes, he do.", "Yes, he is.", "Yes, I am."],
+            correct: 1,
+            explain: "「<span class='keyword'>Is he</span>...?」ときかれたら、「<span class='keyword'>Yes, he is.</span>」とこたえるよ。"
+        },
+        {
+            q: "Does she play soccer?",
+            jp: "かのじょは サッカーをする？",
+            a: ["Yes, she does.", "Yes, she is.", "Yes, I do."],
+            correct: 0,
+            explain: "「<span class='keyword'>Does she</span>...?」ときかれたら、「<span class='keyword'>Yes, she does.</span>」とこたえるよ。"
+        },
+        {
+            q: "Are you happy?",
+            jp: "あなたは げんき？",
+            a: ["Yes, I do.", "Yes, I am.", "Yes, you are."],
+            correct: 1,
+            explain: "「<span class='keyword'>Are you</span>...?（あなたは～ですか）」なので「<span class='keyword'>Yes, I am.</span>（はい、わたしは～です）」だよ。"
+        },
+        {
+            q: "Do you eat pizza?",
+            jp: "ピザは たべる？",
+            a: ["Yes, I am.", "Yes, it is.", "Yes, I do."],
+            correct: 2,
+            explain: "「<span class='keyword'>Do</span>」できかれたら「<span class='keyword'>do</span>」をつかって こたえよう。"
+        },
+        {
+            q: "Is this a pen?",
+            jp: "これは ペンですか？",
+            a: ["Yes, it is.", "Yes, he is.", "Yes, I am."],
+            correct: 0,
+            explain: "「<span class='keyword'>This</span>（これ）」はモノなので、「<span class='keyword'>It</span>（それ）」をつかって こたえるよ。"
+        },
+        {
+            q: "Does he like cats?",
+            jp: "かれは ネコがすき？",
+            a: ["Yes, he is.", "Yes, he does.", "Yes, he do."],
+            correct: 1,
+            explain: "「<span class='keyword'>Does</span>」できかれたら「<span class='keyword'>does</span>」でこたえるのが ルールだよ。"
+        },
+        {
+            q: "Are they friends?",
+            jp: "かれらは ともだち？",
+            a: ["Yes, they do.", "Yes, we are.", "Yes, they are."],
+            correct: 2,
+            explain: "「<span class='keyword'>Are they</span>...?（かれらは～ですか）」には「<span class='keyword'>Yes, they are.</span>」とこたえるよ。"
+        },
+        {
+            q: "Do you have a pen?",
+            jp: "ペンを もっている？",
+            a: ["Yes, I am.", "Yes, I do.", "Yes, I have."],
+            correct: 1,
+            explain: "「<span class='keyword'>Do you</span>...?」のしつもんには、シンプルに「<span class='keyword'>Yes, I do.</span>」とこたえよう。"
+        }
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let isAnswered = false;
+
+    // HTML要素
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const qNumEl = document.getElementById('q-num');
+    const progressFill = document.getElementById('progress-fill');
+    const questionTextEl = document.getElementById('question-text');
+    const questionJpEl = document.getElementById('question-jp');
+    const optionsArea = document.getElementById('options-area');
+    const feedbackArea = document.getElementById('feedback-area');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackDetail = document.getElementById('feedback-detail');
+    const nextBtn = document.getElementById('next-btn');
+    const finalScoreEl = document.getElementById('final-score');
+    const resultMessageEl = document.getElementById('result-message');
+
+    // スタートボタン
+    function startQuiz() {
+        startScreen.style.display = 'none';
+        quizScreen.style.display = 'block';
+        loadQuestion();
+    }
+
+    // 読み上げ機能
+    function speakCurrentQuestion() {
+        if (!window.speechSynthesis) return;
+
+        // 再生中のものをキャンセル
+        window.speechSynthesis.cancel();
+
+        const q = questions[currentIndex];
+        const utterance = new SpeechSynthesisUtterance(q.q);
+        
+        // 設定
+        utterance.lang = 'en-US'; // 英語（アメリカ）
+        utterance.rate = 0.8;     // 少しゆっくり
+        utterance.pitch = 1.0;    // 普通の高さ
+        utterance.volume = 1.0;   // 音量
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 問題を読み込む
+    function loadQuestion() {
+        isAnswered = false;
+        const q = questions[currentIndex];
+
+        qNumEl.textContent = currentIndex + 1;
+        progressFill.style.width = `${((currentIndex) / questions.length) * 100}%`;
+        
+        questionTextEl.textContent = q.q;
+        questionJpEl.textContent = q.jp;
+
+        optionsArea.innerHTML = '';
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = 'feedback-area';
+        nextBtn.style.display = 'none';
+
+        // 選択肢作成
+        q.a.forEach((ans, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = ans;
+            btn.onclick = () => checkAnswer(idx, btn);
+            optionsArea.appendChild(btn);
+        });
+
+        // 自動読み上げ（少し遅らせて自然に）
+        setTimeout(() => {
+            speakCurrentQuestion();
+        }, 500);
+    }
+
+    // 答え合わせ
+    function checkAnswer(selectedIdx, btnElement) {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const q = questions[currentIndex];
+        const buttons = optionsArea.querySelectorAll('.option-btn');
+        const correctBtn = buttons[q.correct];
+
+        if (selectedIdx === q.correct) {
+            btnElement.classList.add('correct');
+            feedbackArea.classList.add('feedback-correct');
+            feedbackTitle.textContent = "せいかい！🎉";
+            feedbackTitle.style.color = "#2e7d32";
+            score++;
+        } else {
+            btnElement.classList.add('wrong');
+            correctBtn.classList.add('correct');
+            feedbackArea.classList.add('feedback-wrong');
+            feedbackTitle.textContent = "おしい！😢";
+            feedbackTitle.style.color = "#c62828";
+        }
+
+        feedbackDetail.innerHTML = q.explain;
+        feedbackArea.style.display = 'block';
+        nextBtn.style.display = 'inline-block';
+        
+        progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+    }
+
+    // 次へ
+    function nextQuestion() {
+        window.speechSynthesis.cancel(); // 次へ行ったら音声ストップ
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    // 結果
+    function showResult() {
+        quizScreen.style.display = 'none';
+        resultScreen.style.display = 'flex';
+        finalScoreEl.textContent = score;
+
+        if (score === 10) {
+            resultMessageEl.innerHTML = "パーフェクト！<br>あなたは英語マスターだね！🌟";
+        } else if (score >= 8) {
+            resultMessageEl.innerHTML = "すごい！<br>あとちょっとで満点だ！✨";
+        } else {
+            resultMessageEl.innerHTML = "がんばったね！<br>なんどもチャレンジしてみよう！💪";
+        }
+    }
+
+</script>
+
+</body>
+</html>
